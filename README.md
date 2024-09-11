@@ -9,8 +9,6 @@ This is a Spring Boot application for managing members. It provides a REST API f
 - [Configuration](#configuration)
 - [Running the Application](#running-the-application)
 - [API Endpoints](#api-endpoints)
-- [Project Structure](#project-structure)
-- [License](#license)
 
 ## Features
 - **Member Management**: Create, read, update, and delete members.
@@ -76,7 +74,7 @@ The application will start on `http://localhost:9001`.
 
 ## API Endpoints
 
-### `GET /api/members`
+### `GET /kitchensink/rest/members`
 
 Retrieve a list of all members, ordered by name in ascending order.
 
@@ -85,9 +83,9 @@ Retrieve a list of all members, ordered by name in ascending order.
   
 - **Curl**:
   ```bash
-  curl -X GET "http://localhost:9001/rest/members" -H "Authorization: Bearer <token>"
+  curl -X GET "http://localhost:8080/kitchensink/rest/members" -H "Authorization: Bearer <token>"
   ```
-### `GET /api/members/{id}`
+### `GET /kitchensink/rest/members/{id}`
 
 Retrieve a member by its ID.
 - **Response**:
@@ -96,10 +94,10 @@ Retrieve a member by its ID.
   
 - **Curl**:
   ```bash
-  curl -X GET "http://localhost:9001/rest/members/1" -H "Authorization: Bearer <token>"
+  curl -X GET "http://localhost:8080/kitchensink/rest/members/1" -H "Authorization: Bearer <token>"
   ```
   
-### `POST /api/members`
+### `POST /kitchensink/rest/members`
 
 Create a new member.
 
@@ -113,12 +111,13 @@ Create a new member.
     }
     ```
 - **Response**:
-  - **200 OK**: If the member is successfully created.
-  - **409 Conflict**: If member email is already taken.
+  - `200 OK`: If the member is successfully created.
+  - `409 Conflict`: If member email is already taken.
+  - `400 Bad Request`: If any of member fields validation fails.
 
 - **Curl**:
     ```bash
-    curl -X POST http://localhost:8080/rest/members \
+    curl -X POST http://localhost:8080/kitchensink/rest/members \
     -H "Authorization: Bearer <token> \
     -d '{
           "name": "name",
@@ -127,7 +126,7 @@ Create a new member.
         }'
     ```
 
-### `PATCH /api/members/{id}`
+### `PATCH /kitchensink/rest/members/{id}`
 
 Update a Member.
 
@@ -141,13 +140,13 @@ Update a Member.
       }
     ```
 - **Response**:
-  - **200 OK**: If the member is successfully updated.
-  - **409 Conflict**: If member email is already taken.
-  - **404 NOT FOUND**: If the member is not found.
+  - `200 OK`: If the member is successfully updated.
+  - `409 Conflict`: If member email is already taken.
+  - `404 NOT FOUND`: If the member is not found.
 
 - **Curl**:
     ```bash
-    curl -X PATCH "{base_url}/api/members/{id}" \
+    curl -X PATCH "http://localhost:8080/kitchensink/rest/members/{id}" \
     -H "Authorization: Bearer {token}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
@@ -158,7 +157,7 @@ Update a Member.
     }'
     ```
 
-### `DELETE /api/members/{id}`
+### `DELETE /kitchensink/rest/members/{id}`
 
 Delete a member by its ID.
 - **Response**:
@@ -167,7 +166,7 @@ Delete a member by its ID.
   
 - **Curl**:
   ```bash
-  curl -X DELETE "{base_url}/api/members/{id}" \
+  curl -X DELETE "http://localhost:8080/kitchensink/rest/members/{id}" \
   -H "Authorization: Bearer {token}"
   ```
     
