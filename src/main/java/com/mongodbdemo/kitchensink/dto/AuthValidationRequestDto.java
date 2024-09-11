@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-@AllArgsConstructor public class AuthValidationRequestDto {
+@AllArgsConstructor
+public class AuthValidationRequestDto {
     private String accessToken;
     private List<String> roles;
 }
