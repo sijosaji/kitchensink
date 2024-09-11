@@ -38,7 +38,7 @@ public class MemberService {
                     memberRepository.findByEmail(email)
                             .filter(member -> !member.getId().equals(id))
                             .ifPresent(member -> {
-                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                throw new ResponseStatusException(HttpStatus.CONFLICT,
                                         "Email is already in use by another member");
                             });
                     existingMember.setEmail(email);

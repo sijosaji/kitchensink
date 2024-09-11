@@ -103,7 +103,7 @@ public class MemberServiceTest {
             memberService.updateMember(memberId, updateDto);
         });
 
-        assertEquals(HttpStatus.BAD_REQUEST, thrown.getStatusCode());
+        assertEquals(HttpStatus.CONFLICT, thrown.getStatusCode());
         assertEquals("Email is already in use by another member", thrown.getReason());
     }
 
