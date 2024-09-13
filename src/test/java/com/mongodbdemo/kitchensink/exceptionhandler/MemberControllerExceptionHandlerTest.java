@@ -1,20 +1,20 @@
 package com.mongodbdemo.kitchensink.exceptionhandler;
 
+import com.mongodbdemo.kitchensink.dto.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,11 +58,11 @@ public class MemberControllerExceptionHandlerTest {
         HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
 
         // Act
-        ResponseEntity<Map<String, String>> response = exceptionHandler.handleHttpExceptions(ex);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleHttpExceptions(ex);
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(Map.of("error", "Provided request is unauthenticated"), response.getBody());
+        assertEquals("Provided request is unauthenticated", response.getBody().error());
     }
 
     @Test
@@ -71,11 +71,11 @@ public class MemberControllerExceptionHandlerTest {
         ResponseStatusException ex = new ResponseStatusException(HttpStatus.FORBIDDEN, "Custom forbidden message");
 
         // Act
-        ResponseEntity<Map<String, String>> response = exceptionHandler.handleHttpExceptions(ex);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleHttpExceptions(ex);
 
         // Assert
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        assertEquals(Map.of("error", "Custom forbidden message"), response.getBody());
+        assertEquals("Custom forbidden message", response.getBody().error());
     }
 
     @Test
@@ -185,12 +185,12 @@ public class MemberControllerExceptionHandlerTest {
         HttpClientErrorException clientErrorException = new HttpClientErrorException(HttpStatus.TOO_MANY_REQUESTS, "Too many requests", headers, null, null);
 
         // Act
-        ResponseEntity<Map<String, String>> response = exceptionHandler.handleHttpExceptions(clientErrorException);
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleHttpExceptions(clientErrorException);
 
         // Assert
         assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
         assertEquals("60", response.getHeaders().getFirst("retry-after"));
-        assertEquals(Map.of("error", "Too many requests please try again later"), response.getBody());
+        assertEquals("Too many requests please try again later", response.getBody().error());
     }
 
     @Test
@@ -204,4 +204,14 @@ public class MemberControllerExceptionHandlerTest {
         // Assert
         assertEquals("Too many requests please try again later", message);
     }
+
+    @Test
+    public void testHandleDuplicateKeyException() {
+        DuplicateKeyException exception = new DuplicateKeyException("Duplicate key error");
+        ResponseEntity<ErrorResponse> response = exceptionHandler.handleDuplicateKeyException(exception);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals("Check if any field on which uniqueness is defined is being duplicated", response.getBody().error());
+    }
+
 }

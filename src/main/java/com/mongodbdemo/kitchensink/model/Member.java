@@ -2,9 +2,9 @@ package com.mongodbdemo.kitchensink.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -23,6 +23,7 @@ public class Member {
     @NotNull
     @NotEmpty
     @Email
+    @Indexed(unique = true)
     private String email;
 
     @NotNull

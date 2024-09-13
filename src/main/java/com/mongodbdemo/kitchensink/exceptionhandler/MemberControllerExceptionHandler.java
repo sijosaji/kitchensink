@@ -1,5 +1,7 @@
 package com.mongodbdemo.kitchensink.exceptionhandler;
 
+import com.mongodbdemo.kitchensink.dto.ErrorResponse;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,7 @@ public class MemberControllerExceptionHandler {
     }
 
     @ExceptionHandler({HttpClientErrorException.class, ResponseStatusException.class})
-    public ResponseEntity<Map<String, String>> handleHttpExceptions(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleHttpExceptions(Exception ex) {
         HttpStatusCode statusCode = extractStatusCode(ex);
         String message = extractMessage(ex);
         var response = ResponseEntity.status(statusCode);
@@ -36,7 +38,13 @@ public class MemberControllerExceptionHandler {
             response.header("retry-after",
                     clientErrorException.getResponseHeaders().get("retry-after").get(0));
         }
-        return response.body(Map.of("error", message));
+        return response.body(new ErrorResponse(message));
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateKeyException(DuplicateKeyException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("Check if any field on which uniqueness is defined is being duplicated"));
     }
 
      HttpStatusCode extractStatusCode(Exception ex) {
@@ -65,4 +73,6 @@ public class MemberControllerExceptionHandler {
             default -> throw new IllegalStateException("Unexpected value: " + status);
         };
     }
+
+
 }
