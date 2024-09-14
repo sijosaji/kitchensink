@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -56,6 +58,8 @@ public class AuthorizationAspectTest {
         when(joinPoint.getSignature()).thenReturn(methodSignature);
         when(methodSignature.getMethod()).thenReturn(method);
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
 
         when(restTemplate.exchange(eq(authServiceUrl),
                 eq(HttpMethod.POST),
@@ -149,6 +153,7 @@ public class AuthorizationAspectTest {
         // Arrange
         String token = "valid-token";
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
         // Act
         Optional<String> extractedToken = authorizationAspect.extractToken();
@@ -178,5 +183,44 @@ public class AuthorizationAspectTest {
         // Assert
         assertNotNull(headers);
         assertEquals("application/json", headers.getContentType().toString());
+    }
+
+    @Test
+    void testExtractTokenWithBearerToken() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + "token123");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        // Act
+        Optional<String> token = authorizationAspect.extractToken();
+
+        // Assert
+        assertEquals(Optional.of("token123"), token);
+    }
+
+    @Test
+    void testExtractTokenWithoutBearerToken() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn(null);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        // Act
+        Optional<String> token = authorizationAspect.extractToken();
+
+        // Assert
+        assertEquals(Optional.empty(), token);
+    }
+
+    @Test
+    void testExtractTokenWithInvalidPrefix() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn("InvalidPrefix token123");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        // Act
+        Optional<String> token = authorizationAspect.extractToken();
+
+        // Assert
+        assertEquals(Optional.empty(), token);
     }
 }

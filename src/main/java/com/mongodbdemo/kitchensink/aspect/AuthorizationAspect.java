@@ -15,6 +15,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -30,10 +32,6 @@ public class AuthorizationAspect {
     private static final String BEARER_PREFIX = "Bearer ";
     @Value("${auth.service.url}")
     String authServiceUrl;
-
-    @Autowired
-    private HttpServletRequest request;
-
     @Autowired
     private RestTemplate restTemplate;
 
@@ -70,6 +68,8 @@ public class AuthorizationAspect {
      * @return an Optional containing the token if present
      */
     Optional<String> extractToken() {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
+                .currentRequestAttributes()).getRequest();
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
             return Optional.of(authHeader.substring(BEARER_PREFIX.length()));
