@@ -20,6 +20,14 @@ import java.util.Map;
 @RestControllerAdvice
 public class MemberControllerExceptionHandler {
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
+    }
+
     @ExceptionHandler({HttpClientErrorException.class, ResponseStatusException.class})
     public ResponseEntity<ErrorResponse> handleHttpExceptions(Exception ex) {
         HttpStatusCode statusCode = extractStatusCode(ex);
