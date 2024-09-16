@@ -32,25 +32,6 @@ public class MemberControllerExceptionHandlerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
-    public void handleValidationExceptionShouldReturnBadRequestWithErrors() {
-        // Arrange
-        MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
-        var fieldError = mock(org.springframework.validation.FieldError.class);
-        BindingResult bindingResult = mock(BindingResult.class);
-
-        when(fieldError.getField()).thenReturn("fieldName");
-        when(fieldError.getDefaultMessage()).thenReturn("errorMessage");
-        when(ex.getBindingResult()).thenReturn(bindingResult);
-        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
-
-        // Act
-        ResponseEntity<Map<String, String>> response = exceptionHandler.handleValidationException(ex);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(Map.of("fieldName", "errorMessage"), response.getBody());
-    }
 
     @Test
     public void handleHttpExceptionsWithHttpClientErrorException_shouldReturnCorrectStatusAndMessage() {

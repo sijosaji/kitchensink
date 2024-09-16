@@ -6,15 +6,17 @@ import com.mongodbdemo.kitchensink.dto.MemberUpdateDto;
 import com.mongodbdemo.kitchensink.model.Member;
 import com.mongodbdemo.kitchensink.repository.MemberRepository;
 import com.mongodbdemo.kitchensink.service.MemberService;
-import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
+import jakarta.validation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import static com.mongodbdemo.kitchensink.MemberConstants.*;
@@ -33,6 +35,9 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private Validator validator;
 
     /**
      * Retrieves a list of all members, ordered by name in ascending order.
@@ -69,11 +74,14 @@ public class MemberController {
      */
     @Authorize(roles = {ROLE_MEMBERS_WRITE})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> createMember(@RequestBody @Valid Member member) {
+    public ResponseEntity<Map<String, String>> createMember(@RequestBody  Member member) {
         try {
             validateMember(member);
             memberService.register(member);
             return ResponseEntity.ok().build();
+        } catch (ConstraintViolationException ce) {
+            // Handle bean validation issues
+            return createViolationResponse(ce.getConstraintViolations());
         } catch (ValidationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("email", "Email taken"));
@@ -118,6 +126,12 @@ public class MemberController {
      * @throws ValidationException if the email is already taken
      */
     private void validateMember(Member member) throws ValidationException {
+        Set<ConstraintViolation<Member>> violations = validator.validate(member);
+
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(new HashSet<>(violations));
+        }
+
         if (emailAlreadyExists(member.getEmail())) {
             throw new ValidationException("Unique Email Violation");
         }
@@ -131,5 +145,17 @@ public class MemberController {
      */
     private boolean emailAlreadyExists(String email) {
         return repository.findByEmail(email).isPresent();
+    }
+
+    private ResponseEntity<Map<String, String>> createViolationResponse(Set<ConstraintViolation<?>> violations) {
+        LOG.fine("Validation completed. violations found: " + violations.size());
+
+        Map<String, String> responseObj = new HashMap<>();
+
+        for (ConstraintViolation<?> violation : violations) {
+            responseObj.put(violation.getPropertyPath().toString(), violation.getMessage());
+        }
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseObj);
     }
 }
