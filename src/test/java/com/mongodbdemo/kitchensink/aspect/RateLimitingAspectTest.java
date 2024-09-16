@@ -10,7 +10,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,6 +29,8 @@ class RateLimitingAspectTest {
 
     @Mock
     private JoinPoint joinPoint;
+    private static final String TEST_URL = "http://example.com/rate-limit";
+    private static final String USER_ID = "testUserId";
 
     @BeforeEach
     void setUp() {
@@ -82,5 +88,37 @@ class RateLimitingAspectTest {
         // Assert
         assertNotNull(entity);
         assertNotNull(entity.getHeaders());
+    }
+
+    @Test
+    void testCallRateLimitServiceInternalServerError() {
+        // Given an INTERNAL_SERVER_ERROR HttpClientErrorException
+        HttpEntity<Void> entity = new HttpEntity<>(null);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        // When the restTemplate.exchange method throws this exception
+        doThrow(exception).when(restTemplate).exchange(TEST_URL, HttpMethod.PUT, entity, Void.class);
+
+        // Then the method should log the error but not rethrow the exception
+        rateLimitingAspect.callRateLimitService(TEST_URL, entity, USER_ID);
+
+        // Verify that the exception was not rethrown
+        verify(restTemplate, times(1)).exchange(TEST_URL, HttpMethod.PUT, entity, Void.class);
+    }
+
+    @Test
+    void testCallRateLimitServiceOtherError() {
+        // Given a BAD_REQUEST HttpClientErrorException
+        HttpEntity<Void> entity = new HttpEntity<>(null);
+        HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
+
+        // When the restTemplate.exchange method throws this exception
+        doThrow(exception).when(restTemplate).exchange(TEST_URL, HttpMethod.PUT, entity, Void.class);
+
+        // Then the exception should be propagated
+        assertThrows(HttpClientErrorException.class, () ->
+                rateLimitingAspect.callRateLimitService(TEST_URL, entity, USER_ID)
+        );
+
     }
 }

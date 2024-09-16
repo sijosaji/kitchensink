@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.logging.Logger;
 
 /**
  * Aspect for handling rate limiting via a dedicated rate limit service.
@@ -23,6 +26,8 @@ public class RateLimitingAspect {
     private final String rateLimitServiceUrl;
 
     private final RestTemplate restTemplate;
+    private final Logger log = Logger.getLogger(getClass().getName());
+
 
     /**
      * Constructs a {@code RateLimitingAspect} with the given {@code RestTemplate} and rate limit service URL.
@@ -49,7 +54,7 @@ public class RateLimitingAspect {
         if (userId != null) {
             String url = buildRateLimitUrl(userId);
             HttpEntity<Void> entity = createHttpEntity();
-            callRateLimitService(url, entity);
+            callRateLimitService(url, entity, userId);
         }
         UserContext.clear();
     }
@@ -77,10 +82,21 @@ public class RateLimitingAspect {
     /**
      * Calls the rate limit service with the given URL and {@code HttpEntity}.
      *
-     * @param url the URL of the rate limit service
+     * @param url    the URL of the rate limit service
      * @param entity the {@code HttpEntity} to be sent with the request
+     * @param userId
      */
-    void callRateLimitService(String url, HttpEntity<Void> entity) {
-        restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+    void callRateLimitService(String url, HttpEntity<Void> entity, String userId) {
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+        } catch (HttpClientErrorException exception) {
+            if (exception.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR)) {
+                log.severe("Cannot check rate limit for the user" + userId +
+                        " thereby allowing current request");
+            } else {
+                throw exception;
+            }
+        }
+
     }
 }
