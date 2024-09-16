@@ -42,10 +42,11 @@ To build and run this application, you need the following installed on your syst
 
  **MongoDB Setup**:
    - Ensure MongoDB is running.
-   - Update the `application.properties` file located in the `src/main/resources` directory with your MongoDB connection details:
+   - Update the `application.properties` file located in the `src/main/resources` directory with your MongoDB connection details
+   - Example :
 
      ```properties
-     spring.data.mongodb.uri=mongodb://localhost:27017/member_management
+     spring.data.mongodb.uri=mongodb://localhost:27017/mongo_migration
      ```
 
 ## Running the Application
