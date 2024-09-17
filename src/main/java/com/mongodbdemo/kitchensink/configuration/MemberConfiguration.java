@@ -34,7 +34,7 @@ public class MemberConfiguration implements WebMvcConfigurer  {
                         .allowedOrigins("*")
                         .allowedMethods("*")
                         .allowedHeaders("*")
-                        .exposedHeaders("retry-after");;
+                        .exposedHeaders("retry-after");
             }
         };
     }
