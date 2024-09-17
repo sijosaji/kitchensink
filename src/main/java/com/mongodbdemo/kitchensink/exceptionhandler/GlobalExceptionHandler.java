@@ -18,7 +18,7 @@ import java.util.Map;
  * Global exception handler for REST controllers.
  */
 @RestControllerAdvice
-public class MemberControllerExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationException(MethodArgumentNotValidException ex) {

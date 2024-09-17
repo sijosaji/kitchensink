@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-public class MemberControllerExceptionHandlerTest {
+public class GlobalExceptionHandlerTest {
 
     @InjectMocks
-    private MemberControllerExceptionHandler exceptionHandler;
+    private GlobalExceptionHandler exceptionHandler;
 
     @BeforeEach
     public void setUp() {
