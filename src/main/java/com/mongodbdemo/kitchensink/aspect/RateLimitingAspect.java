@@ -1,7 +1,6 @@
 package com.mongodbdemo.kitchensink.aspect;
 
 import com.mongodbdemo.kitchensink.helper.UserContext;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +45,9 @@ public class RateLimitingAspect {
      * Retrieves the user ID from {@code UserContext}, constructs the URL for the rate limit service,
      * and calls the rate limit service to enforce rate limiting.
      *
-     * @param joinPoint the join point providing context for the intercepted method call
      */
     @Before("@annotation(com.mongodbdemo.kitchensink.annotation.RateLimit)")
-    public void rateLimit(JoinPoint joinPoint) {
+    public void rateLimit() {
         String userId = UserContext.getUserId();
         if (userId != null) {
             String url = buildRateLimitUrl(userId);
@@ -84,7 +82,7 @@ public class RateLimitingAspect {
      *
      * @param url    the URL of the rate limit service
      * @param entity the {@code HttpEntity} to be sent with the request
-     * @param userId
+     * @param userId the userId
      */
     void callRateLimitService(String url, HttpEntity<Void> entity, String userId) {
         try {

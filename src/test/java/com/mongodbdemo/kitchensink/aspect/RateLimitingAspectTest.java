@@ -27,8 +27,6 @@ class RateLimitingAspectTest {
     @Mock
     private RestTemplate restTemplate;
 
-    @Mock
-    private JoinPoint joinPoint;
     private static final String TEST_URL = "http://example.com/rate-limit";
     private static final String USER_ID = "testUserId";
 
@@ -47,7 +45,7 @@ class RateLimitingAspectTest {
         HttpEntity<Void> entity = new HttpEntity<>(new HttpHeaders());
 
         // Act
-        rateLimitingAspect.rateLimit(joinPoint);
+        rateLimitingAspect.rateLimit();
 
         // Assert
         verify(restTemplate, times(1)).exchange(eq(expectedUrl), eq(HttpMethod.PUT), eq(entity), eq(Void.class));
@@ -60,7 +58,7 @@ class RateLimitingAspectTest {
         UserContext.setUserId(null);
 
         // Act & Assert
-        assertDoesNotThrow(() -> rateLimitingAspect.rateLimit(joinPoint));
+        assertDoesNotThrow(() -> rateLimitingAspect.rateLimit());
 
         // Verify that restTemplate.exchange is not called
         verify(restTemplate, never()).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(Void.class));
