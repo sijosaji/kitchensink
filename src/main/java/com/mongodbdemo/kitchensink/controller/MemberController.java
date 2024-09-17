@@ -99,7 +99,7 @@ public class MemberController {
      * @return the updated member
      */
     @Authorize(roles = {ROLE_MEMBERS_WRITE})
-    @PatchMapping("/{id}")
+    @PatchMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Member> updateMember(@PathVariable Long id,
                                                @Valid @RequestBody MemberUpdateDto updatedMember) {
         Member member = memberService.updateMember(id, updatedMember);
